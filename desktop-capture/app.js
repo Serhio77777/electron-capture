@@ -1,64 +1,65 @@
-// const {desktopCapturer} = require('electron')
-// const fs = require('fs')
-// const MediaStreamRecorder = require('msr')
+const {desktopCapturer} = require('electron')
+const fs = require('fs')
+const MediaStreamRecorder = require('msr')
 
 var streamRecorder
 let desktopSharing = false
 let localStream
 var blobs = []
 
-// function refresh () {
-//   window.$('select').imagepicker({
-//     hide_select: true
-//   })
-// }
-//
-// function addSource (source) {
-//   window.$('select').append(window.$('<option>', {
-//     value: source.id.replace(':', ''),
-//     text: source.name
-//   }))
-//   window.$('select option[value="' + source.id.replace(":", "") + '"]').attr('data-img-src', source.thumbnail.toDataURL())
-//   refresh()
-// }
-//
-// function showSources () {
-//   desktopCapturer.getSources({ types:['window', 'screen'] }, function(error, sources) {
-//     addSource(sources[1])
-//     // for (let source of sources) {
-//     //   console.log('Name: ' + source.name)
-//     //   addSource(source[1])
-//     // }
-//   })
-// }
+function refresh () {
+  window.$('select').imagepicker({
+    hide_select: true
+  })
+}
+
+function addSource (source) {
+  window.$('select').append(window.$('<option>', {
+    value: source.id.replace(':', ''),
+    text: source.name
+  }))
+  console.log(navigator.mediaDevices)
+  window.$('select option[value="' + source.id.replace(":", "") + '"]').attr('data-img-src', source.thumbnail.toDataURL())
+  refresh()
+}
+
+function showSources () {
+  desktopCapturer.getSources({ types:['window', 'screen'] }, function(error, sources) {
+    addSource(sources[1])
+    // for (let source of sources) {
+    //   console.log('Name: ' + source.name)
+    //   addSource(source[1])
+    // }
+  })
+}
 
 function toggle () {
-  onAccessApproved()
-  // if (!desktopSharing) {
-  //   var id = (window.$('select').val()).replace(/window|screen/g, function(match) { return match + ':' })
-  //   onAccessApproved(id)
-  // } else {
-  //   desktopSharing = false
-  //
-  //   if (localStream) {
-  //     localStream.getTracks()[0].stop()
-  //   }
-  //   streamRecorder.stop()
-  //   localStream = null
-  //
-  //   document.querySelector('button').innerHTML = 'Enable Capture'
-  //
-  //   window.$('select').empty()
-  //   showSources()
-  //   refresh()
-  // }
+  // onAccessApproved()
+  if (!desktopSharing) {
+    var id = (window.$('select').val()).replace(/window|screen/g, function(match) { return match + ':' })
+    onAccessApproved(id)
+  } else {
+    desktopSharing = false
+
+    if (localStream) {
+      localStream.getTracks()[0].stop()
+    }
+    streamRecorder.stop()
+    localStream = null
+
+    document.querySelector('button').innerHTML = 'Enable Capture'
+
+    window.$('select').empty()
+    showSources()
+    refresh()
+  }
 }
 
 function onAccessApproved (desktopId) {
-  // if (!desktopId) {
-  //   console.log('Desktop Capture access rejected.')
-  //   return
-  // }
+  if (!desktopId) {
+    console.log('Desktop Capture access rejected.')
+    return
+  }
   // console.log(desktopId)
   desktopSharing = true
   document.querySelector('button').innerHTML = 'Disable Capture'
@@ -68,7 +69,7 @@ function onAccessApproved (desktopId) {
     video: {
       mandatory: {
         chromeMediaSource: 'desktop',
-        chromeMediaSourceId: 'screen:188953530',
+        chromeMediaSourceId: desktopId,
         minWidth: 1280,
         maxWidth: 1280,
         minHeight: 720,
@@ -102,15 +103,15 @@ function onAccessApproved (desktopId) {
 function stopRecording () {
   toArrayBuffer(new Blob(blobs, {type: 'video/webm'}), function (ab) {
     var buffer = toBuffer(ab)
-    // var file = `./videos/example.webm`
+    var file = `./videos/example.webm`
     console.log(buffer)
-    // fs.writeFile(file, buffer, function (err) {
-    //   if (err) {
-    //     console.error('Failed to save video ' + err)
-    //   } else {
-    //     console.log('Saved video: ' + file)
-    //   }
-    // })
+    fs.writeFile(file, buffer, function (err) {
+      if (err) {
+        console.error('Failed to save video ' + err)
+      } else {
+        console.log('Saved video: ' + file)
+      }
+    })
   })
 }
 function toArrayBuffer (blob, cb) {
@@ -132,8 +133,8 @@ function toBuffer (ab) {
 }
 
 window.$(document).ready(function () {
-  // showSources()
-  // refresh()
+  showSources()
+  refresh()
 })
 
 document.querySelector('button').addEventListener('click', function (e) {
